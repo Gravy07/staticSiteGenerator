@@ -7,8 +7,8 @@ class TextType(Enum):
     BOLD = "bold"  # Markdown **bold**
     ITALIC = "italic"  # Markdown _italic_
     CODE = "code"  # Markdown ```code```
-    LINKED = "linked"  # Markdown [anchor_text](url)
-    IMAGES = "image"  # Markdown ![alt_text](url)
+    LINK = "linked"  # Markdown [anchor_text](url)
+    IMAGE = "image"  # Markdown ![alt_text](url)
 
 class TextNode:
     def __init__(self, text: str, text_type: TextType, url: str):
