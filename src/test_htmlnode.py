@@ -1,5 +1,5 @@
 import unittest
-from htmlnode import HTMLNode, LeafNode
+from htmlnode import HTMLNode, LeafNode, ParentNode
 
 
 
@@ -53,6 +53,61 @@ class TestHTMLNode(unittest.TestCase):
     def test_leaf_to_html_no_value(self):
         node = LeafNode("a", None, {"href": "website", "tar": "_blank"})
         self.assertRaises(ValueError)
+
+    ## Parent Node to_html  ##  Ran short on time, look into more outlaying cases
+
+    def test_to_html_with_children(self):
+        child_node = LeafNode("span", "child")
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(parent_node.to_html(), "<div><span>child</span></div>")
+
+
+    def test_to_html_with_grandchildren(self):
+        grandchild_node = LeafNode("b", "grandchild")
+        child_node = ParentNode("span", [grandchild_node])
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(
+            parent_node.to_html(),
+            "<div><span><b>grandchild</b></span></div>",
+        )
+
+    def test_multiple_children_order(self):
+        node = ParentNode("p", [
+            LeafNode("b", "bold"),
+            LeafNode(None, "plain"),
+            LeafNode("i", "italic"),
+        ])
+        self.assertEqual(node.to_html(), "<p><b>bold</b>plain<i>italic</i></p>")
+
+    def test_nested_parents(self):
+        inner = ParentNode("span", [LeafNode("b", "deep")])
+        outer = ParentNode("div", [inner])
+        self.assertEqual(outer.to_html(), "<div><span><b>deep</b></span></div>")
+
+    def test_mixed_children(self):
+        node = ParentNode("div", [
+            LeafNode(None, "text"),
+            ParentNode("ul", [LeafNode("li", "one"), LeafNode("li", "two")]),
+            LeafNode("p", "after"),
+        ])
+        self.assertEqual(
+            node.to_html(),
+            "<div>text<ul><li>one</li><li>two</li></ul><p>after</p></div>",
+         )
+
+    def test_no_tag_raises(self):
+        with self.assertRaises(ValueError):
+            ParentNode(None, [LeafNode("b", "x")]).to_html()
+
+    def test_no_children_raises(self):
+        with self.assertRaises(ValueError):
+            ParentNode("div", None).to_html()
+
+    def test_error_propagates_from_deep_child(self):
+        bad = LeafNode("b", None)
+        node = ParentNode("div", [ParentNode("span", [bad])])
+        with self.assertRaises(ValueError):
+            node.to_html()
 
     ### repr tests ###
     # HTML Node #
